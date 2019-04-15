@@ -69,7 +69,7 @@ Configuration for JS library:
 |afterAction|function()|null|Function that run before loading next page.|
 |beforeAction|function()|null|Function that run after loading next page.|
 |dataProcess|function(data,target)|null| Data post process after loading next page - 
-|dataUrl|string|null|**(required)** Next page data URL.|
+|url|string|null|**(required)** Next page data URL.|
 |initialLoad|boolean|null|Load first page with Ajax.|
 |loadMargin|integer|50|Bottom margin in pixels, when will start loading next page.|
 |lastPage|boolean|false|Set current page as last page|
