@@ -1,5 +1,5 @@
 # FlexInfiniteScroll
-
+[![Gem Version](https://badge.fury.io/rb/flex_infinite_scroll.svg)](https://badge.fury.io/rb/flex_infinite_scroll)
 Simple infinite scroll gem based on jQuery. Have JS part and ruby part, that you can use separetly.
 
 
