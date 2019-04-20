@@ -75,6 +75,7 @@ self.infinite_scroll(page = 1, page_size = (ENV['FIS_PAGE_SIZE'] || 20))
 Configuration that you add to ```fis_init_list``` will be copy to JS library ```flexInfiniteScroll```. So you can use JS library separetly with you favorite pagination gem. 
 
 Configuration for JS library and :
+
 |Parameter|Type|Default|JS|Description|
 |---------|----|-------|--|-----------|
 |afterAction|function()|null|```True```|Function that run before loading next page.|
@@ -88,7 +89,8 @@ Configuration for JS library and :
 |scrollContainer|string|body|```False```| Select target for scroll event|
 |startPage|integer|1|```True```|Start page for loading data|
 |targetContainer|string|null|```True```|Select container to append next page data|
-|queryParams|json|{page: page}|```True```|Params that will send to next page request. 
+|queryParams|json|{page: page}|```True```|Params that will send to next page request.|
+
 
 License
 ----
