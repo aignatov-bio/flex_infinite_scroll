@@ -10,7 +10,7 @@ $.fn.extend({
     var queryParams = config.queryParams;
     var dataProcess = config.dataProcess;
     var initialLoad = config.initialLoad;
-    var loadMargin = config.loadMargin || 50;
+    var loadMargin = config.loadMargin || 150;
     var beforeAction = config.beforeAction;
     var afterAction = config.afterAction;
     var targetContainer = config.targetContainer || scrollContainer ;
@@ -19,7 +19,6 @@ $.fn.extend({
     scrollContainer.dataset.fisNextPage = nextPage;
     scrollContainer.dataset.fisUrl = dataUrl;
     scrollContainer.dataset.fisLoading = 0;
-    
     function getData(page = 1){
       // Check for loading process and last page
       if (scrollContainer.dataset.fisLoading === '1' || page == 'last') return false
@@ -77,7 +76,10 @@ $.fn.extend({
     	var scrollTop=$(eventTarget).scrollTop();
     	var containerSize=$(scrollContainer).innerHeight();
     	var scrollSize=scrollContainer.scrollHeight;
+      console.log(scrollSize - loadMargin)
+      console.log(scrollTop + containerSize)
     	if (scrollTop + containerSize > scrollSize - loadMargin && scrollContainer.dataset.fisNextPage != 'last'){
+        console.log(1)
         getData(scrollContainer.dataset.fisNextPage);
     	};
     })

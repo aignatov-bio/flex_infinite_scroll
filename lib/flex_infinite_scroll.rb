@@ -1,11 +1,19 @@
+# frozen_string_literal: true
+
 # Infinite scroll module
+require 'flex_infinite_scroll/view_helpers'
+require 'sanitize'
+
 module FlexInfiniteScroll
-  class Engine < ::Rails::Engine; end
+  class Engine < ::Rails::Engine
+    ActionView::Base.send :include, FlexInfiniteScroll::ViewHelpers
+  end
   extend ActiveSupport::Concern
   def infinite_scroll(page = 1, page_size = (ENV['FIS_PAGE_SIZE'] || 20))
+    page ||= 1
     page = page.to_i if page.class == String
     offset_skip = (page - 1) * page_size
-    total_page = (count / page_size.to_f).ceil
+    total_page = (count('*') / page_size.to_f).ceil
     {
       data: offset(offset_skip).limit(page_size),
       total_page: total_page,
