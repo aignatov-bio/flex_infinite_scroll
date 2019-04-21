@@ -6,10 +6,14 @@ module FlexInfiniteScroll
     include ActionView::Context
 
     def fis_init_list(data, partial, config = {})
-      result = content_tag :div, class: "fis-container #{config[:container_class] || ''}" do
-        fis_get_list(data, partial, 'html')
-      end
-      config[:scrollContainer] ||= 'body'
+      result = if config[:targetContainer]
+                 fis_get_list(data, partial, 'html')
+               else
+                 content_tag :div, class: "fis-container #{config[:container_class] || ''}" do
+                   fis_get_list(data, partial, 'html')
+                 end
+               end
+      config[:scrollContainer] ||= (config[:targetContainer] || 'body')
       config[:targetContainer] ||= '.fis-container'
       result += javascript_tag do
         "$('#{config[:scrollContainer]}').flexInfiniteScroll(#{config.to_json})".html_safe

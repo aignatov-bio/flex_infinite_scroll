@@ -56,7 +56,7 @@ end
 User view:
 ```sh
 # views/users/index.html.erb
-<%= fis_init_list(@recipes,'users/user_partial',{url: users_path}) %>
+<%= fis_init_list(@users,'users/user_partial',{url: users_path}) %>
 ```
 
 User partial:
