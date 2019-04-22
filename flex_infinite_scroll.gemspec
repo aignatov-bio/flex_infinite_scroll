@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'flex_infinite_scroll'
-  s.version = '0.1.2'
+  s.version = '0.1.3'
   s.date = '2019-04-21'
   s.summary = 'Add infinite scrolling to models and views'
   s.author = 'Anton Ignatov'
@@ -13,8 +13,8 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
   s.homepage = 'https://github.com/aignatov-bio/flex_infinite_scroll'
   
-  s.add_runtime_dependency "sanitize", '~> 2.1.1'
-  s.add_runtime_dependency 'rails', '~> 4.0'
+  s.add_runtime_dependency "sanitize", '>= 4.6.3'
+  s.add_runtime_dependency 'rails', '>= 4.0'
   
   s.requirements << 'jQuery'
 end
