@@ -6,10 +6,11 @@ module FlexInfiniteScroll
     include ActionView::Context
 
     def fis_init_list(data, partial, config = {})
+      data = kaminari_prepare(data) if config[:kaminari]
       result = if config[:targetContainer]
                  fis_get_list(data, partial, 'html')
                else
-                 content_tag :div, id: "fis-container", class: "#{config[:container_class] || ''}" do
+                 content_tag :div, id: 'fis-container', class: (config[:container_class] || '').to_s do
                    fis_get_list(data, partial, 'html')
                  end
                end
@@ -21,7 +22,8 @@ module FlexInfiniteScroll
       result.html_safe
     end
 
-    def fis_next_page(data, partial)
+    def fis_next_page(data, partial, config = {})
+      data = kaminari_prepare(data) if config[:kaminari]
       data[:data] = fis_get_list(data, partial, 'json')
       data
     end
@@ -36,6 +38,15 @@ module FlexInfiniteScroll
                   end
       end
       result.html_safe
+    end
+
+    private
+
+    def kaminari_prepare(data)
+      {
+        data: data,
+        next_page: data.next_page
+      }
     end
   end
 end

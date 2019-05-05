@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.name = 'flex_infinite_scroll'
-  s.version = '0.1.3'
-  s.date = '2019-04-21'
-  s.summary = 'Add infinite scrolling to models and views'
+  s.version = '0.1.4'
+  s.date = '2019-05-05'
+  s.summary = 'Infinite scroll for Ruby on Rails applications on pure JavaScript. Also has Kaminari support for pagination.'
   s.author = 'Anton Ignatov'
   s.email = 'belmek@me.com'
   s.files = [
