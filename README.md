@@ -1,7 +1,7 @@
 # FlexInfiniteScroll
 [![Gem Version](https://badge.fury.io/rb/flex_infinite_scroll.svg)](https://badge.fury.io/rb/flex_infinite_scroll)
 
-Simple infinite scroll gem based on jQuery. Have JS part and ruby part, that you can use separetly.
+Infinite scroll for Ruby on Rails applications on pure JavaScript. Also has Kaminari support for pagination.
 
 
 ### Installation
@@ -56,7 +56,7 @@ end
 User view:
 ```sh
 # views/users/index.html.erb
-<%= fis_init_list(@users,'users/user_partial',{url: users_path}) %>
+<%= fis_init_list(@users, 'users/user_partial', url: users_path) %>
 ```
 
 User partial:
@@ -65,6 +65,35 @@ User partial:
 <div class="user-container">
     <div class="user-name"><%= fis_object.user_name %></div>
 </div>
+```
+
+### Example with Kaminari
+For this example we will use same model and user partial. But now we will use Kaminari pagination gem.
+User controller:
+```sh
+#controllers/users_controller.rb
+class UsersController < ApplicationController
+
+    include FlexInfiniteScroll::ViewHelpers
+    
+    def index
+        @users = User.page(params[:page] || 1)
+        respond_to do |format|
+            format.json do
+                render json: fis_next_page(@users,'users/user_partial.html.erb', kaminari: true)
+            end
+            format.html do
+            end
+        end
+    end
+    
+end
+```
+
+User view:
+```sh
+# views/users/index.html.erb
+<%= fis_init_list(@users, 'users/user_partial', url: users_path, kaminari: true) %>
 ```
 
 #### Configuration
@@ -84,6 +113,7 @@ Configuration for JS library and :
 |dataProcess|function(data,target)|null|```True```|Data post process after loading next page - 
 |url|string|null|```True```|**(required)** Next page data URL.|
 |initialLoad|boolean|null|```True```|Load first page with Ajax.|
+|kaminari|boolean|false|```False```|Enable Kaminari support.|
 |loadMargin|integer|150|```True```|Bottom margin in pixels, when will start loading next page.|
 |lastPage|boolean|false|```True```|Set current page as last page|
 |scrollContainer|string|body|```False```| Select target for scroll event|
