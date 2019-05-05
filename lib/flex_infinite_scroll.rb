@@ -2,7 +2,6 @@
 
 # Infinite scroll module
 require 'flex_infinite_scroll/view_helpers'
-require 'sanitize'
 
 module FlexInfiniteScroll
   class Engine < ::Rails::Engine

@@ -13,8 +13,6 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
   s.homepage = 'https://github.com/aignatov-bio/flex_infinite_scroll'
   
-  s.add_runtime_dependency "sanitize", '>= 4.6.3'
   s.add_runtime_dependency 'rails', '>= 4.0'
   
-  s.requirements << 'jQuery'
 end

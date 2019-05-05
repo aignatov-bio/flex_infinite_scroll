@@ -9,18 +9,16 @@ module FlexInfiniteScroll
       result = if config[:targetContainer]
                  fis_get_list(data, partial, 'html')
                else
-                 content_tag :div, class: "fis-container #{config[:container_class] || ''}" do
+                 content_tag :div, id: "fis-container", class: "#{config[:container_class] || ''}" do
                    fis_get_list(data, partial, 'html')
                  end
                end
       config[:scrollContainer] ||= (config[:targetContainer] || 'body')
-      config[:targetContainer] ||= '.fis-container'
+      config[:targetContainer] ||= 'fis-container'
       result += javascript_tag do
-        "$('#{config[:scrollContainer]}').flexInfiniteScroll(#{config.to_json})".html_safe
+        "flexInfiniteScroll('#{config[:scrollContainer]}',#{config.to_json})".html_safe
       end
-      Sanitize.fragment(result,
-                        Sanitize::Config.merge(Sanitize::Config::RELAXED,
-                                               elements: Sanitize::Config::RELAXED[:elements] + %w(script))).html_safe
+      result.html_safe
     end
 
     def fis_next_page(data, partial)
@@ -37,7 +35,7 @@ module FlexInfiniteScroll
                     render partial: partial, locals: { fis_object: member }
                   end
       end
-      Sanitize.fragment(result, Sanitize::Config::RELAXED).html_safe
+      result.html_safe
     end
   end
 end

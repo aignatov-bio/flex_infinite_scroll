@@ -1,12 +1,12 @@
 // Flex Infinite Scroll initialization
 
-$.fn.extend({
-  flexInfiniteScroll: function(config = {}) {
+
+function flexInfiniteScroll(object_id,config = {}) {
     // Config preparing
     var startPage = config.startPage || 1;
     var nextPage = startPage + 1;
     var dataUrl = config.url;
-    var scrollContainer = this[0];
+    var scrollContainer = (object_id == 'body' ? document.body : document.getElementById(object_id));
     var queryParams = config.queryParams;
     var dataProcess = config.dataProcess;
     var initialLoad = config.initialLoad;
@@ -14,53 +14,68 @@ $.fn.extend({
     var beforeAction = config.beforeAction;
     var afterAction = config.afterAction;
     var targetContainer= config.targetContainer || scrollContainer ;
-    var eventTarget = (scrollContainer.localName == 'body' ? window : scrollContainer);
+    var eventTarget = (object_id == 'body' ? window : scrollContainer);
     if (config.lastPage) nextPage = 'last';
     scrollContainer.dataset.fisNextPage = nextPage;
     scrollContainer.dataset.fisUrl = dataUrl;
     scrollContainer.dataset.fisLoading = 0;
     
     function getScrollHeight(){
-      if (scrollContainer.localName == 'body'){
-        return document.documentElement.scrollHeight
+      if (object_id == 'body'){
+        return document.documentElement.scrollHeight;
       } else {
-        return eventTarget.scrollHeight
+        return eventTarget.scrollHeight;
       }
       
+    }
+
+    function urlParams(object) {
+      var encodedString = '';
+      for (var prop in object) {
+          if (object.hasOwnProperty(prop)) {
+              if (encodedString.length > 0) {
+                  encodedString += '&';
+              }
+              encodedString += encodeURI(prop + '=' + object[prop]);
+          }
+      }
+      return encodedString;
     }
     
     function getData(page = 1){
       // Check for loading process and last page
-      if (scrollContainer.dataset.fisLoading === '1' || page == 'last') return false
+      if (scrollContainer.dataset.fisLoading === '1' || page == 'last') return false;
       scrollContainer.dataset.fisLoading = 1;
       // before load action
       if (beforeAction) {
         if (typeof(beforeAction) == 'function') {
           beforeAction();
         }else if (typeof(beforeAction) == 'string') {
-          eval(beforeAction)
+          eval(beforeAction);
         }
       }
-      $.ajax({
-        url: scrollContainer.dataset.fisUrl,
-        // custom query params
-        data: (queryParams || {page: page}),
-        dataType: 'json',
-        type: 'GET',
-        success: function(json) {
-          
+      var xhr = new XMLHttpRequest();
+      var params = (queryParams || {page: page});
+      xhr.open('GET', scrollContainer.dataset.fisUrl + '?' + urlParams(params));
+      xhr.onload = function() {
+        var json = JSON.parse(xhr.response)
+        if (xhr.status === 200) {
           if (dataProcess){
             // custom user processor
-            dataProcess(json,$(targetContainer));
+            dataProcess(json,targetContainer);
           } else {
             // default data processor
-            $(json.data).appendTo($(targetContainer));
+            var div = document.createElement('div');
+            div.innerHTML = json.data;
+            while (div.children.length > 0) {
+              document.getElementById(targetContainer).appendChild(div.children[0]);
+            }
           }
           scrollContainer.dataset.fisNextPage = json.next_page || 'last';
           scrollContainer.dataset.fisLoading = 0;
           if (scrollNotApear()) {
             // check if on initial load not enough elements on screen
-            getData(scrollContainer.dataset.fisNextPage)
+            getData(scrollContainer.dataset.fisNextPage);
           }
           // after load action
           if (afterAction) {
@@ -69,17 +84,17 @@ $.fn.extend({
             }else if (typeof(afterAction) == 'string') {
               eval(afterAction)
             }
-          }
-        },
-        error: function() {
+          }   
+        } else {
           scrollContainer.dataset.fisLoading = 0;
         }
-      });
+      };
+      xhr.send();
     }
     
     // intial load
     if (initialLoad) {
-      getData(startPage)
+      getData(startPage);
     } else if (scrollNotApear()) {
       // check if on initial load not enough elements on screen
       getData(scrollContainer.dataset.fisNextPage);
@@ -88,14 +103,14 @@ $.fn.extend({
     // check if body scroll
     
     function scrollNotApear(){
-      var containerSize=$(eventTarget).innerHeight();
+      var containerSize=(object_id == 'body' ?  eventTarget.innerHeight : eventTarget.offsetHeight);
     	var scrollSize=getScrollHeight();
-      return (scrollSize - containerSize - loadMargin <= 0)
+      return (scrollSize - containerSize - loadMargin <= 0);
     }
 
-    $(eventTarget).on('scroll', () => {
-    	var scrollTop=$(eventTarget).scrollTop();
-    	var containerSize=$(eventTarget).innerHeight();
+    eventTarget.addEventListener('scroll', function() {
+    	var scrollTop= (object_id == 'body' ?  eventTarget.scrollY : eventTarget.scrollTop);
+    	var containerSize=(object_id == 'body' ?  eventTarget.innerHeight : eventTarget.offsetHeight);
     	var scrollSize=getScrollHeight();
     	if (scrollTop + containerSize > scrollSize - loadMargin && scrollContainer.dataset.fisNextPage != 'last'){
         getData(scrollContainer.dataset.fisNextPage);
@@ -104,5 +119,4 @@ $.fn.extend({
     
     
     
-  }
-})
+}
