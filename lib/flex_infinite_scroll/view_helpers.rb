@@ -6,13 +6,12 @@ module FlexInfiniteScroll
     include ActionView::Context
 
     def fis_init_list(object_name, config = {})
-      data = kaminari_prepare(data) if config[:kaminari]
-      result = content_tag :div, '', id: object_name, class: 'fis-container', data: {
-        fis_url: config[:url],
-        fis_load_margin: config[:loadMargin],
-        fis_event_target: config[:eventTarget] || 'body',
-        fis_start_page: config[:startPage],
-      }
+      config[:eventTarget] ||= 'body'
+      
+      result = content_tag :div, '', 
+                           id: object_name,
+                           class: config[:turbolinks] ? 'fis-turbolinks-container' : 'fis-container', 
+                           data: Hash[config.map { |k, v| [k.to_s.underscore.to_sym, v] }]
       result.html_safe
     end
   end

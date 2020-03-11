@@ -1,107 +1,137 @@
 // Flex Infinite Scroll initialization
 
+'use strict';
+
 class FlexIS {
     constructor(objectName, config = {}) {
-        this.targetObject = document.querySelector(objectName)
-        this.config = config
-        this.loading = false
-        this.currentPage = this.config.startPage || 0
-        this.nextPage = this.currentPage + 1
+        this.targetObject = document.querySelector(objectName);
+        this.config = {...config, ...this.targetObject.dataset};
+        this.loading = false;
+        this.nextPage = this.config.startPage || 1;
         
-        this.config.url = this.config.url ||
-                          this.targetObject.dataset.fisUrl
+        this.config.requestType = this.config.requestType || 'GET';
+        this.config.loadMargin = this.config.loadMargin || 150;
+        this.config.eventTarget = prepareEventTarget(this);
         
-        this.config.loadMargin = this.config.loadMargin ||
-                                 this.targetObject.dataset.fisloadMargin ||
-                                 150
-        
-        this.config.eventTarget = prepareEventTarget(this)
-        
-        function prepareEventTarget(scrollObject) {
-            var eventTarget = document.querySelector(scrollObject.config.eventTarget) ||
-                              document.querySelector(scrollObject.targetObject.dataset.fisEventTarget) ||
-                              scrollObject.targetObject
-            return eventTarget.tagName === 'BODY' ? window : eventTarget
+        function prepareEventTarget(object) {
+            var eventTarget = document.querySelector(object.config.eventTarget) || object.targetObject;
+            return eventTarget.tagName === 'BODY' ? window : eventTarget;
         }
     }
     
     init() {
         this.#getData();
         this.config.eventTarget.addEventListener('scroll', () => {
-        	var scrollTop= this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY;
-        	var containerSize = this.config.eventTarget.innerHeight || this.targetObject.offsetHeight;
-        	var scrollSize = this.#scrollHeight();
-        	if (scrollTop + containerSize > scrollSize - this.config.loadMargin && this.nextPage !== 'last') {
-                this.#getData()
+        	if (this.#scrollHitBottom() && this.nextPage) {
+                this.#getData();
         	};
-        })
+        });
+        return this;
     }
     
-    resetScroll() {
-        this.currentPage = this.config.startPage || 0
-        this.nextPage = this.currentPage + 1
+    resetScroll(page) {
+        this.nextPage =  page || this.config.startPage || 1;
         this.#getData();
+        return this;
     }
     
     // Private methods 
     
     
-    #getData = (page = this.currentPage ) => {
-        // Check for loading process and last page
-        console.log(page)
-        if (this.loading || page === 'last') return false;
+    #getData = (page = this.nextPage ) => {
+        var xhr = new XMLHttpRequest();
+        var params;
+        
+        if (!page || this.loading) return false;
+        
         this.loading = true;
         
-        var xhr = new XMLHttpRequest();
-        var params = {page: parseInt(this.nextPage, 10)};
-        xhr.open('GET', this.config.url + '?' + this.#urlParams(params));
+        params = this.#customParams({page: parseInt(page, 10)});
+
+        xhr.open('GET', this.#requestUrl(params));
         xhr.onload = () => {
-          var json = JSON.parse(xhr.response)
-          if (xhr.status === 200 && xhr.status < 300) {
-            var div = document.createElement('div');
-            div.innerHTML = json.data;
-            while (div.children.length > 0) {
-                this.targetObject.appendChild(div.children[0]);
-            }
+          var json = JSON.parse(xhr.response);
             
-            this.currentPage = json.next_page ? json.current_page : 'last';
+          this.loading = false;
+          
+          if (xhr.status === 200) {
+            this.#customResponse(json)
             this.nextPage = json.next_page;
-            this.loading = false;
-            if (this.#scrollNotApear()) {
-              // check if on initial load not enough elements on screen
-              this.#getData();
-            }
-          } else {
-            this.loading = false;
+            if (this.#scrollHitBottom()) this.#getData();
           }
-        };
+          
+        }
         xhr.send();
     }
     
     #scrollHeight = () => {
-        return this.targetObject.scrollHeight
+        return this.targetObject.scrollHeight;
     }
     
-    #urlParams = (params) => {
+    #scrollTop = () => {
+        return this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY;
+    }
+    
+    #containerSize = () => {
+        return this.config.eventTarget.innerHeight || this.targetObject.offsetHeight;
+    }
+    
+    #customParams = (params) => {
+        var customParams = this.config.customParams;
+        if (customParams) {
+            if (typeof customParams === "function") {
+                return customParams(params);
+            } else if (typeof customParams === "object") {
+                return {...customParams, ...params};
+            } else if (typeof customParams === "string") {
+                return {...JSON.parse(customParams), ...params};
+            }
+        }
+        return params;
+    }
+    
+    #customResponse = (json) => {
+        var customResponse = this.config.customResponse;
+        var div;
+        if (typeof customResponse === "function") {
+            customResponse(this.targetObject, json);
+        } else {
+            div = document.createElement('div');
+            div.innerHTML = json.data;
+            while (div.children.length > 0) {
+                this.targetObject.appendChild(div.children[0]);
+            }
+        }
+        
+    }
+    
+    #requestUrl = (params) => {
         var encodedString = [];
         for (var prop in params) {
             if (params.hasOwnProperty(prop)) {
                 encodedString.push(encodeURI(prop + '=' + params[prop]));
             }
         }
-        return encodedString.join('&');
+        return this.config.requestUrl + '?' + encodedString.join('&');
     }
     
-    #scrollNotApear = () => {
-      var containerSize = this.config.eventTarget.innerHeight || this.targetObject.offsetHeight;
-      var scrollSize = this.#scrollHeight();
-      return (scrollSize - containerSize - this.config.loadMargin <= 0);
+    #scrollHitBottom = () => {
+      return (this.#scrollHeight() - this.#scrollTop()  - this.#containerSize() - this.config.loadMargin <= 0);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    var fisObjects = [...document.getElementsByClassName('fis-container')]
+    window.FlexIS = {};
+    var fisObjects = [...document.getElementsByClassName('fis-container')];
     fisObjects.forEach(object => {
-        new FlexIS('#' + object.id).init()
+        window.FlexIS['#' + object.id] = new FlexIS('#' + object.id).init();
+    })
+})
+
+document.addEventListener('turbolinks:load', () => {
+    window.FlexIS = {};
+    var fisObjects = [...document.getElementsByClassName('fis-turbolinks-container')];
+    fisObjects.forEach(object => {
+        window.FlexIS['#' + object.id] = new FlexIS('#' + object.id).init();
     })
 })
