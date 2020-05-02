@@ -3,22 +3,26 @@
 'use strict';
 
 class FlexIS {
-    constructor(objectName, config = {}) {
-        this.targetObject = document.querySelector(objectName);
+    constructor(targetObject, config = {}) {
+        this.targetObject = (typeof(targetObject) === 'object' ? targetObject : document.querySelector(targetObject));
         this.config = {...config, ...this.targetObject.dataset};
         this.loading = false;
         this.nextPage = this.config.startPage || 1;
-        
+
         this.config.requestType = this.config.requestType || 'GET';
         this.config.loadMargin = this.config.loadMargin || 150;
         this.config.eventTarget = prepareEventTarget(this);
-        
+
         function prepareEventTarget(object) {
             var eventTarget = document.querySelector(object.config.eventTarget) || object.targetObject;
-            return eventTarget.tagName === 'BODY' ? window : eventTarget;
+            if (object.config.windowScroll) {
+                return window
+            } else {
+                return eventTarget
+            }
         }
     }
-    
+
     init() {
         this.#getData();
         this.config.eventTarget.addEventListener('scroll', () => {
@@ -28,54 +32,53 @@ class FlexIS {
         });
         return this;
     }
-    
+
     resetScroll(page) {
         this.nextPage =  page || this.config.startPage || 1;
         this.#getData();
         return this;
     }
-    
-    // Private methods 
-    
-    
+
+    // Private methods
+
     #getData = (page = this.nextPage ) => {
         var xhr = new XMLHttpRequest();
         var params;
-        
+
         if (!page || this.loading) return false;
-        
+
         this.loading = true;
-        
+
         params = this.#customParams({page: parseInt(page, 10)});
 
         xhr.open('GET', this.#requestUrl(params));
         xhr.onload = () => {
           var json = JSON.parse(xhr.response);
-            
+
           this.loading = false;
-          
+
           if (xhr.status === 200) {
             this.#customResponse(json)
             this.nextPage = json.next_page;
             if (this.#scrollHitBottom()) this.#getData();
           }
-          
+
         }
         xhr.send();
     }
-    
+
     #scrollHeight = () => {
         return this.targetObject.scrollHeight;
     }
-    
+
     #scrollTop = () => {
         return this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY;
     }
-    
+
     #containerSize = () => {
         return this.config.eventTarget.innerHeight || this.targetObject.offsetHeight;
     }
-    
+
     #customParams = (params) => {
         var customParams = this.config.customParams;
         if (customParams) {
@@ -89,7 +92,7 @@ class FlexIS {
         }
         return params;
     }
-    
+
     #customResponse = (json) => {
         var customResponse = this.config.customResponse;
         var div;
@@ -102,9 +105,9 @@ class FlexIS {
                 this.targetObject.appendChild(div.children[0]);
             }
         }
-        
+
     }
-    
+
     #requestUrl = (params) => {
         var encodedString = [];
         for (var prop in params) {
@@ -114,24 +117,22 @@ class FlexIS {
         }
         return this.config.requestUrl + '?' + encodedString.join('&');
     }
-    
+
     #scrollHitBottom = () => {
-      return (this.#scrollHeight() - this.#scrollTop()  - this.#containerSize() - this.config.loadMargin <= 0);
+        return (this.#scrollHeight() - this.#scrollTop()  - this.#containerSize() - this.config.loadMargin <= 0);
     }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.FlexIS = {};
     var fisObjects = [...document.getElementsByClassName('fis-container')];
     fisObjects.forEach(object => {
-        window.FlexIS['#' + object.id] = new FlexIS('#' + object.id).init();
+        new FlexIS(object).init();
     })
 })
 
 document.addEventListener('turbolinks:load', () => {
-    window.FlexIS = {};
     var fisObjects = [...document.getElementsByClassName('fis-turbolinks-container')];
     fisObjects.forEach(object => {
-        window.FlexIS['#' + object.id] = new FlexIS('#' + object.id).init();
+        new FlexIS(object).init();
     })
 })

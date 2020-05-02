@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'flex_infinite_scroll'
-  s.version = '0.1.4'
+  s.version = '0.1.5'
   s.date = '2019-05-05'
   s.summary = 'Infinite scroll for Ruby on Rails applications on pure JavaScript.'
   s.author = 'Anton Ignatov'
@@ -13,7 +13,7 @@ Gem::Specification.new do |s|
   ]
   s.license = 'MIT'
   s.homepage = 'https://github.com/aignatov-bio/flex_infinite_scroll'
-  
+
   s.add_runtime_dependency 'rails', '>= 4.0'
-  
+
 end
