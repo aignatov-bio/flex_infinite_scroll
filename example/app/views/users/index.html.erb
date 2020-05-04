@@ -2,9 +2,13 @@
   <span>Window scroll</span>
   <span>Fixed height container</span>
   <span>Custom render</span>
+  <span>Event handling</span>
+  <span>Custom parameters</span>
 </div>
 <div class="containers">
   <div class="fis-container fw" data-request-url="<%= list_users_path %>" data-window-scroll="true"></div>
   <div class="fis-container fh fp fw" data-request-url="<%= list_users_path %>"></div>
-  <div class="custom-render fp fh fw" data-request-url="<%= list_json_users_path %>"></div>
+  <div id="custom-render" class="fp fh fw" data-request-url="<%= list_json_users_path %>"></div>
+  <div id="events-example" class="fp fh fw" data-request-url="<%= list_users_path %>"></div>
+  <div id="custom-parameters" class="fp fh fw" data-request-url="<%= list_users_path %>"></div>
 </div>

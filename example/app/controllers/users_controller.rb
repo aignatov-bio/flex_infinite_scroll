@@ -6,7 +6,7 @@ class UsersController < ApplicationController
 
   def list
     page = params[:page].to_i || 1
-    records_per_page = 20
+    records_per_page = params[:per_page] ? params[:per_page].to_i : 20
     total_users = User.count
     users = User.all.offset((page - 1) * records_per_page).limit(records_per_page)
     render json: {

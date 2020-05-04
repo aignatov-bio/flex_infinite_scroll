@@ -2,7 +2,7 @@
 
 'use strict';
 
-class FlexIS {
+class flexIS {
     constructor(targetObject, config = {}) {
         this.targetObject = (typeof(targetObject) === 'object' ? targetObject : document.querySelector(targetObject));
         this.config = {...config, ...this.targetObject.dataset};
@@ -34,6 +34,7 @@ class FlexIS {
     }
 
     resetScroll(page) {
+        this.targetObject.innerHTML = '';
         this.nextPage =  page || this.config.startPage || 1;
         this.#getData();
         return this;
@@ -44,6 +45,8 @@ class FlexIS {
     #getData = (page = this.nextPage ) => {
         var xhr = new XMLHttpRequest();
         var params;
+        const beforeLoadEvent = new CustomEvent('FlexIS:beforeLoad');
+        const afterLoadEvent = new CustomEvent('FlexIS:afterLoad');
 
         if (!page || this.loading) return false;
 
@@ -51,6 +54,7 @@ class FlexIS {
 
         params = this.#customParams({page: parseInt(page, 10)});
 
+        this.targetObject.dispatchEvent(beforeLoadEvent)
         xhr.open('GET', this.#requestUrl(params));
         xhr.onload = () => {
           var json = JSON.parse(xhr.response);
@@ -62,6 +66,8 @@ class FlexIS {
             this.nextPage = json.next_page;
             if (this.#scrollHitBottom()) this.#getData();
           }
+
+          this.targetObject.dispatchEvent(afterLoadEvent)
 
         }
         xhr.send();
@@ -126,13 +132,17 @@ class FlexIS {
 document.addEventListener('DOMContentLoaded', () => {
     var fisObjects = [...document.getElementsByClassName('fis-container')];
     fisObjects.forEach(object => {
-        new FlexIS(object).init();
+        object.data = {
+            flexIS: new flexIS(object).init()
+        }
     })
 })
 
 document.addEventListener('turbolinks:load', () => {
     var fisObjects = [...document.getElementsByClassName('fis-turbolinks-container')];
     fisObjects.forEach(object => {
-        new FlexIS(object).init();
+        object.data = {
+            flexIS: new flexIS(object).init()
+        }
     })
 })
