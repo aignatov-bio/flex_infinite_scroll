@@ -1,7 +1,7 @@
 # FlexInfiniteScroll
 [![Gem Version](https://badge.fury.io/rb/flex_infinite_scroll.svg)](https://badge.fury.io/rb/flex_infinite_scroll)
 
-Infinite scroll for Ruby on Rails applications on pure JavaScript. Also has Kaminari support for pagination.
+Infinite scroll for Ruby on Rails applications on pure JavaScript.
 
 
 ### Installation
@@ -22,105 +22,95 @@ Add JS library to application.js
 
 ### Example
 
-Simple example for User model.
+Simply add `fis-container` class and `data-request-url="<%= example_path %>"` attribute to container:
 
-User model:
-```sh
-# models/user.rb
-class User < ApplicationRecord
-    extend FlexInfiniteScroll
-end
+```html
+<div class="fis-container" data-request-url="<%= example_path %>"></div>
 ```
 
-User controller:
-```sh
-#controllers/users_controller.rb
-class UsersController < ApplicationController
+##### OR
 
-    include FlexInfiniteScroll::ViewHelpers
-    
-    def index
-        @users = User.order(:id).infinite_scroll(params[:page])
-        respond_to do |format|
-            format.json do
-                render json: fis_next_page(@users,'users/user_partial.html.erb')
-            end
-            format.html do
-            end
-        end
-    end
-    
-end
+Initialize with JS:
+
+```js
+var scrollContainer = document.getElementById('example');
+var fis = new flexIS(scrollContainer, {requestUrl: 'example_path'}).init();
 ```
 
-User view:
+For more examples, you can run demo project localy. Go to `example` folder.
+
+Install gems:
 ```sh
-# views/users/index.html.erb
-<%= fis_init_list(@users, 'users/user_partial', url: users_path) %>
+bundle install
 ```
 
-User partial:
+Initialize database and seed it with test data:
 ```sh
-# views/users/_user_partial.html.erb
-<div class="user-container">
-    <div class="user-name"><%= fis_object.user_name %></div>
-</div>
+rake db:create
+rake db:migrate
+rake db:seed
 ```
 
-### Example with Kaminari
-For this example we will use same model and user partial. But now we will use Kaminari pagination gem.
-User controller:
+Run server:
 ```sh
-#controllers/users_controller.rb
-class UsersController < ApplicationController
-
-    include FlexInfiniteScroll::ViewHelpers
-    
-    def index
-        @users = User.page(params[:page] || 1)
-        respond_to do |format|
-            format.json do
-                render json: fis_next_page(@users,'users/user_partial.html.erb', kaminari: true)
-            end
-            format.html do
-            end
-        end
-    end
-    
-end
+rails s
 ```
 
-User view:
-```sh
-# views/users/index.html.erb
-<%= fis_init_list(@users, 'users/user_partial', url: users_path, kaminari: true) %>
+Now you can access with browser - `http://localhost:3000`
+
+### Options
+##### `customResponse` function(data, target)
+Data processing after loading next page. By default data will be added as HTML.|
+##### `eventTarget` string
+Select different DOM element for scroll event. In query selector format `'#example'`.
+
+##### `requestUrl` string **(required)**
+URL for next page.
+
+##### `loadMargin` integer
+Bottom margin in pixels, when will start loading next page. Default: `150`
+
+##### `startPage` integer
+Start page for loading data. Default: `1`
+
+##### `requestType` string
+Type of AJAX request. Default: `GET`
+
+##### `customParams` function(params)
+Parameters that will be sent with next page request. Default: `{page: next_page}`
+
+##### `windowScroll` boolean
+Attach scroll event to `window` object.
+
+### Required response format
+Example of response data:
+```ruby
+{
+    data: [{id: 1, name: 'User 1'},...],
+    next_page: 2
+}
 ```
 
-#### Configuration
-Pagination for model
-```sh
-self.infinite_scroll(page = 1, page_size = (ENV['FIS_PAGE_SIZE'] || 20))
+### Actions
+
+##### `init()`
+Initialize scroll container.
+```js
+var fis = new flexIS(scrollContainer, {requestUrl: 'example_path'}).init(); 
 ```
-Configuration that you add to ```fis_init_list``` will be copy to JS library ```flexInfiniteScroll```. So you can use JS library separetly with you favorite pagination gem. 
+##### `resetScroll(page)` 
+Reset scroll to specific page and clear all data in container. Default page - `1`.
+```js
+fis.resetScroll(); 
+```
 
-Configuration for JS library and :
+### Events
 
-|Parameter|Type|Default|JS|Description|
-|---------|----|-------|--|-----------|
-|afterAction|function()|null|```True```|Function that run before loading next page.|
-|beforeAction|function()|null|```True```|Function that run after loading next page.|
-|container_class|string|null|```False```| Add custom classes to container|
-|dataProcess|function(data,target)|null|```True```|Data post process after loading next page - 
-|url|string|null|```True```|**(required)** Next page data URL.|
-|initialLoad|boolean|null|```True```|Load first page with Ajax.|
-|kaminari|boolean|false|```False```|Enable Kaminari support.|
-|loadMargin|integer|150|```True```|Bottom margin in pixels, when will start loading next page.|
-|lastPage|boolean|false|```True```|Set current page as last page|
-|scrollContainer|string|body|```False```| Select target for scroll event|
-|startPage|integer|1|```True```|Start page for loading data|
-|targetContainer|string|null|```True```|Select container to append next page data|
-|queryParams|json|{page: page}|```True```|Params that will send to next page request.|
+##### `FlexIS:beforeLoad`
+Fires before next page request.
 
+##### `FlexIS:afterLoad`
+Fires after next page loaded.
 
 License
 ----
