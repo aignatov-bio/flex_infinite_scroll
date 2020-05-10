@@ -29,6 +29,8 @@ class flexIS {
         	if (this.#scrollHitBottom() && this.nextPage) {
                 this.#getData();
         	};
+
+            this.#hideInvisibleContent();
         });
         return this;
     }
@@ -78,7 +80,7 @@ class flexIS {
     }
 
     #scrollTop = () => {
-        return this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY;
+        return this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY || 0;
     }
 
     #containerSize = () => {
@@ -112,6 +114,24 @@ class flexIS {
             }
         }
 
+        this.#hideInvisibleContent();
+    }
+
+    #hideInvisibleContent = () => {
+        var elems = this.targetObject.children
+        for (let i = 0; i < elems.length; i++) {
+            let elem = elems[i];
+            let elementTopPosition = elems[i].offsetTop + elems[i].offsetHeight - this.#scrollTop();
+            let elementBottomPosition = elems[i].offsetTop - elems[i].offsetHeight - this.#scrollTop() - this.#containerSize();
+
+            if (elementTopPosition <= 0 || elementBottomPosition >= 0) {
+                if (elem.style.visibility === 'hidden') continue;
+                elem.style.visibility = 'hidden';
+            } else {
+                if (elem.style.visibility === '') continue;
+                elem.style.visibility = '';
+            }
+        }
     }
 
     #requestUrl = (params) => {
