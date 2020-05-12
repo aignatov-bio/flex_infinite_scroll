@@ -37,7 +37,7 @@ var scrollContainer = document.getElementById('example');
 var fis = new flexIS(scrollContainer, {requestUrl: 'example_path'}).init();
 ```
 
-For more examples, you can run demo project localy. Go to `example` folder.
+For more examples, you can run demo project locally. Go to `example` folder.
 
 Install gems:
 ```sh
@@ -60,7 +60,18 @@ Now you can access with browser - `http://localhost:3000`
 
 ### Options
 ##### `customResponse` function(data, target)
-Data processing after loading next page. By default data will be added as HTML.|
+Data processing after loading next page. By default data will be added as HTML.
+
+##### `customResponseAttributes` object
+Set custom response attribute.
+**Default:**
+```
+{
+    next_page: 'next_page', // Next page integer value, "null" - if no more pages. 
+    data: 'data' // Field with HTML for render. Only for default response render.
+}
+```
+
 ##### `eventTarget` string
 Select different DOM element for scroll event. In query selector format `'#example'`.
 
@@ -68,28 +79,22 @@ Select different DOM element for scroll event. In query selector format `'#examp
 URL for next page.
 
 ##### `loadMargin` integer
-Bottom margin in pixels, when will start loading next page. Default: `150`
+Bottom margin in pixels, when will start loading next page.
+**Default:** `150`
 
 ##### `startPage` integer
-Start page for loading data. Default: `1`
+Start page for loading data.
+**Default:** `1`
 
 ##### `requestType` string
 Type of AJAX request. Default: `GET`
 
 ##### `customParams` function(params)
-Parameters that will be sent with next page request. Default: `{page: next_page}`
+Parameters that will be sent with next page request. 
+**Default:** `{page: next_page}`
 
 ##### `windowScroll` boolean
 Attach scroll event to `window` object.
-
-### Required response format
-Example of response data:
-```ruby
-{
-    data: [{id: 1, name: 'User 1'},...],
-    next_page: 2
-}
-```
 
 ### Actions
 

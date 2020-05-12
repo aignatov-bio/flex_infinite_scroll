@@ -1,14 +1,12 @@
 Gem::Specification.new do |s|
   s.name = 'flex_infinite_scroll'
-  s.version = '0.1.5'
-  s.date = '2019-05-05'
+  s.version = '0.2.1'
+  s.date = '2020-05-12'
   s.summary = 'Infinite scroll for Ruby on Rails applications on pure JavaScript.'
   s.author = 'Anton Ignatov'
   s.email = 'belmek@me.com'
   s.files = [
     'lib/flex_infinite_scroll.rb',
-    'lib/flex_infinite_scroll/view_helpers.rb',
-    'lib/flex_infinite_scroll/active_record_extension.rb',
     'vendor/assets/javascript/flex_infinite_scroll.js'
   ]
   s.license = 'MIT'

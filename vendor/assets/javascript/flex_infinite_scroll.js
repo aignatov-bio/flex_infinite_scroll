@@ -1,8 +1,30 @@
 // Flex Infinite Scroll initialization
 
+/*
+    config = {
+        customResponse: function(target, data) {
+            'Data processing after loading next page. By default data will be added as HTML.'
+        },
+        eventTarget: 'Select different DOM element for scroll event',
+        requestUrl: 'URL for next page.',
+        loadMargin: 'Bottom margin in pixels, when will start loading next page. Default: 150',
+        startPage: 'Start page for loading data. Default: 1',
+        requestType: 'Type of AJAX request. Default: GET',
+        customParams: function(params) {
+            Parameters that will be sent with next page request. Default: {page: next_page}
+            return params
+        },
+        windowScroll: Attach scroll event to window object,
+        customResponseAttributes: {
+            next_page: 'next_page',
+            data: 'data'
+        }
+    }
+*/
+
 'use strict';
 
-class FlexIS {
+class flexIS {
     constructor(targetObject, config = {}) {
         this.targetObject = (typeof(targetObject) === 'object' ? targetObject : document.querySelector(targetObject));
         this.config = {...config, ...this.targetObject.dataset};
@@ -12,13 +34,14 @@ class FlexIS {
         this.config.requestType = this.config.requestType || 'GET';
         this.config.loadMargin = this.config.loadMargin || 150;
         this.config.eventTarget = prepareEventTarget(this);
+        this.#customResponseAttributesSet();
 
         function prepareEventTarget(object) {
             var eventTarget = document.querySelector(object.config.eventTarget) || object.targetObject;
             if (object.config.windowScroll) {
-                return window
+                return window;
             } else {
-                return eventTarget
+                return eventTarget;
             }
         }
     }
@@ -29,11 +52,13 @@ class FlexIS {
         	if (this.#scrollHitBottom() && this.nextPage) {
                 this.#getData();
         	};
+            this.#hideInvisibleContent();
         });
         return this;
     }
 
     resetScroll(page) {
+        this.targetObject.innerHTML = '';
         this.nextPage =  page || this.config.startPage || 1;
         this.#getData();
         return this;
@@ -44,6 +69,8 @@ class FlexIS {
     #getData = (page = this.nextPage ) => {
         var xhr = new XMLHttpRequest();
         var params;
+        const beforeLoadEvent = new CustomEvent('FlexIS:beforeLoad');
+        const afterLoadEvent = new CustomEvent('FlexIS:afterLoad');
 
         if (!page || this.loading) return false;
 
@@ -51,6 +78,7 @@ class FlexIS {
 
         params = this.#customParams({page: parseInt(page, 10)});
 
+        this.targetObject.dispatchEvent(beforeLoadEvent);
         xhr.open('GET', this.#requestUrl(params));
         xhr.onload = () => {
           var json = JSON.parse(xhr.response);
@@ -58,10 +86,12 @@ class FlexIS {
           this.loading = false;
 
           if (xhr.status === 200) {
-            this.#customResponse(json)
-            this.nextPage = json.next_page;
+            this.#customResponse(json);
+            this.nextPage = json[this.config.customResponseAttributes.next_page];
             if (this.#scrollHitBottom()) this.#getData();
           }
+
+          this.targetObject.dispatchEvent(afterLoadEvent);
 
         }
         xhr.send();
@@ -72,7 +102,7 @@ class FlexIS {
     }
 
     #scrollTop = () => {
-        return this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY;
+        return this.config.eventTarget.scrollTop || this.config.eventTarget.scrollY || 0;
     }
 
     #containerSize = () => {
@@ -100,12 +130,37 @@ class FlexIS {
             customResponse(this.targetObject, json);
         } else {
             div = document.createElement('div');
-            div.innerHTML = json.data;
+            div.innerHTML = json[this.config.customResponseAttributes.data];
             while (div.children.length > 0) {
                 this.targetObject.appendChild(div.children[0]);
             }
         }
 
+        this.#hideInvisibleContent();
+    }
+
+    #hideInvisibleContent = () => {
+        var elems = this.targetObject.children;
+        for (let i = 0; i < elems.length; i++) {
+            let elem = elems[i];
+            let elementTopPosition = elems[i].offsetTop + elems[i].offsetHeight - this.#scrollTop();
+            let elementBottomPosition = elems[i].offsetTop - elems[i].offsetHeight - this.#scrollTop() - this.#containerSize();
+
+            if (elementTopPosition <= 0 || elementBottomPosition >= 0) {
+                if (elem.style.visibility === 'hidden') continue;
+                elem.style.visibility = 'hidden';
+            } else {
+                if (elem.style.visibility === '') continue;
+                elem.style.visibility = '';
+            }
+        }
+    }
+
+    #customResponseAttributesSet = () => {
+        var attr = this.config.customResponseAttributes || {};
+        attr.next_page = attr.next_page || 'next_page';
+        attr.data = attr.data || 'data';
+        this.config.customResponseAttributes = attr
     }
 
     #requestUrl = (params) => {
@@ -126,13 +181,17 @@ class FlexIS {
 document.addEventListener('DOMContentLoaded', () => {
     var fisObjects = [...document.getElementsByClassName('fis-container')];
     fisObjects.forEach(object => {
-        new FlexIS(object).init();
+        object.data = {
+            flexIS: new flexIS(object).init()
+        };
     })
 })
 
 document.addEventListener('turbolinks:load', () => {
     var fisObjects = [...document.getElementsByClassName('fis-turbolinks-container')];
     fisObjects.forEach(object => {
-        new FlexIS(object).init();
+        object.data = {
+            flexIS: new flexIS(object).init()
+        };
     })
 })
