@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name = 'flex_infinite_scroll'
   s.version = '0.2.1'
-  s.date = '2020-05-06'
+  s.date = '2020-05-12'
   s.summary = 'Infinite scroll for Ruby on Rails applications on pure JavaScript.'
   s.author = 'Anton Ignatov'
   s.email = 'belmek@me.com'
