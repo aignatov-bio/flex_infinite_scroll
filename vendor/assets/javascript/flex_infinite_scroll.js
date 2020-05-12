@@ -1,5 +1,27 @@
 // Flex Infinite Scroll initialization
 
+/*
+    config = {
+        customResponse: function(target, data) {
+            'Data processing after loading next page. By default data will be added as HTML.'
+        },
+        eventTarget: 'Select different DOM element for scroll event',
+        requestUrl: 'URL for next page.',
+        loadMargin: 'Bottom margin in pixels, when will start loading next page. Default: 150',
+        startPage: 'Start page for loading data. Default: 1',
+        requestType: 'Type of AJAX request. Default: GET',
+        customParams: function(params) {
+            Parameters that will be sent with next page request. Default: {page: next_page}
+            return params
+        },
+        windowScroll: Attach scroll event to window object,
+        customResponseAttributes: {
+            next_page: 'next_page',
+            data: 'data'
+        }
+    }
+*/
+
 'use strict';
 
 class flexIS {
@@ -12,13 +34,14 @@ class flexIS {
         this.config.requestType = this.config.requestType || 'GET';
         this.config.loadMargin = this.config.loadMargin || 150;
         this.config.eventTarget = prepareEventTarget(this);
+        this.#customResponseAttributesSet();
 
         function prepareEventTarget(object) {
             var eventTarget = document.querySelector(object.config.eventTarget) || object.targetObject;
             if (object.config.windowScroll) {
-                return window
+                return window;
             } else {
-                return eventTarget
+                return eventTarget;
             }
         }
     }
@@ -29,7 +52,6 @@ class flexIS {
         	if (this.#scrollHitBottom() && this.nextPage) {
                 this.#getData();
         	};
-
             this.#hideInvisibleContent();
         });
         return this;
@@ -56,7 +78,7 @@ class flexIS {
 
         params = this.#customParams({page: parseInt(page, 10)});
 
-        this.targetObject.dispatchEvent(beforeLoadEvent)
+        this.targetObject.dispatchEvent(beforeLoadEvent);
         xhr.open('GET', this.#requestUrl(params));
         xhr.onload = () => {
           var json = JSON.parse(xhr.response);
@@ -64,12 +86,12 @@ class flexIS {
           this.loading = false;
 
           if (xhr.status === 200) {
-            this.#customResponse(json)
-            this.nextPage = json.next_page;
+            this.#customResponse(json);
+            this.nextPage = json[this.config.customResponseAttributes.next_page];
             if (this.#scrollHitBottom()) this.#getData();
           }
 
-          this.targetObject.dispatchEvent(afterLoadEvent)
+          this.targetObject.dispatchEvent(afterLoadEvent);
 
         }
         xhr.send();
@@ -108,7 +130,7 @@ class flexIS {
             customResponse(this.targetObject, json);
         } else {
             div = document.createElement('div');
-            div.innerHTML = json.data;
+            div.innerHTML = json[this.config.customResponseAttributes.data];
             while (div.children.length > 0) {
                 this.targetObject.appendChild(div.children[0]);
             }
@@ -118,7 +140,7 @@ class flexIS {
     }
 
     #hideInvisibleContent = () => {
-        var elems = this.targetObject.children
+        var elems = this.targetObject.children;
         for (let i = 0; i < elems.length; i++) {
             let elem = elems[i];
             let elementTopPosition = elems[i].offsetTop + elems[i].offsetHeight - this.#scrollTop();
@@ -132,6 +154,13 @@ class flexIS {
                 elem.style.visibility = '';
             }
         }
+    }
+
+    #customResponseAttributesSet = () => {
+        var attr = this.config.customResponseAttributes || {};
+        attr.next_page = attr.next_page || 'next_page';
+        attr.data = attr.data || 'data';
+        this.config.customResponseAttributes = attr
     }
 
     #requestUrl = (params) => {
@@ -154,7 +183,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fisObjects.forEach(object => {
         object.data = {
             flexIS: new flexIS(object).init()
-        }
+        };
     })
 })
 
@@ -163,6 +192,6 @@ document.addEventListener('turbolinks:load', () => {
     fisObjects.forEach(object => {
         object.data = {
             flexIS: new flexIS(object).init()
-        }
+        };
     })
 })

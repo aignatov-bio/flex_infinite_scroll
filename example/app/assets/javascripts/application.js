@@ -27,6 +27,9 @@ document.addEventListener("DOMContentLoaded", function(){
         div.innerHTML = 'User name: ' + user.name;
         container.appendChild(div)
       })
+    },
+    customResponseAttributes: {
+      next_page: 'page'
     }
   }).init();
 });

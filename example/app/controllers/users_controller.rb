@@ -22,7 +22,7 @@ class UsersController < ApplicationController
     users = User.all.offset((page - 1) * records_per_page).limit(records_per_page)
     render json: {
       data: users,
-      next_page: ((total_users * records_per_page) == page ? nil : page + 1)
+      page: ((total_users * records_per_page) == page ? nil : page + 1)
     }
   end
 end
