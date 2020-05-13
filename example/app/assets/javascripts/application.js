@@ -13,8 +13,17 @@
 //= require rails-ujs
 //= require activestorage
 //= require flex_infinite_scroll
+//= require perfect-scrollbar.min
 //= require turbolinks
 //= require_tree .
+
+document.addEventListener("DOMContentLoaded", function(){
+  hljs.initHighlightingOnLoad();
+  var scrollObjects = [...document.getElementsByClassName('example')];
+    scrollObjects.forEach(object => {
+        new PerfectScrollbar(object);
+    })
+})
 
 
 // Custom response example
@@ -24,7 +33,8 @@ document.addEventListener("DOMContentLoaded", function(){
     customResponse: function(container, result) {
       result.data.forEach(user => {
         div = document.createElement('div');
-        div.innerHTML = 'User name: ' + user.name;
+        div.className = 'row';
+        div.innerHTML = '<b>User name:</b> ' + user.name;
         container.appendChild(div)
       })
     },
@@ -42,12 +52,14 @@ document.addEventListener("DOMContentLoaded", function(){
 
   event_handling_object.addEventListener('FlexIS:beforeLoad', function(){
     var div = document.createElement('div');
+    div.className = 'row';
     div.innerHTML = 'Before load';
     event_handling_object.appendChild(div)
   });
 
   event_handling_object.addEventListener('FlexIS:afterLoad', function(){
     var div = document.createElement('div');
+    div.className = 'row';
     div.innerHTML = 'After load';
     event_handling_object.appendChild(div)
   });
@@ -68,3 +80,4 @@ document.addEventListener("DOMContentLoaded", function(){
     }
   }).init();
 })
+

@@ -7,6 +7,6 @@
 #   Character.create(name: 'Luke', movie: movies.first)
 unless User.count.positive?
   (1..1000).each do |i|
-    User.create(name: "user_#{i}")
+    User.create(name: "User #{i}")
   end
 end

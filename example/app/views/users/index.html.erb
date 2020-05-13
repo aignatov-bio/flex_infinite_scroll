@@ -1,3 +1,4 @@
+<!--
 <div class="headers">
   <span>Window scroll</span>
   <span>Fixed height container</span>
@@ -11,4 +12,77 @@
   <div id="custom-render" class="fp fh fw" data-request-url="<%= list_json_users_path %>"></div>
   <div id="events-example" class="fp fh fw" data-request-url="<%= list_users_path %>"></div>
   <div id="custom-parameters" class="fp fh fw" data-request-url="<%= list_users_path %>"></div>
+</div> -->
+
+<!-- Simple scroll -->
+<div class="example-block">
+  <div class="description-container">
+    <h2>How it works</h2>
+    <p>
+      Let's start with adding <b>FIS</b> to <b>Gemfile</b>.
+    </p>
+    <pre><code class="gemfile">
+gem "flex_infinite_scroll"
+    </code></pre>
+
+    <p>
+      Now we need to create a container for our elements. Add <b>fis-container</b> class to the container. Don't forget to set <b>height</b> and <b>overflow</b> for the container.
+    </p>
+    <pre><code class="html">
+&lt;div class="fis-container" data-request-url="<%= list_users_path %>"&gt;&lt;/div&gt;
+    </code></pre>
+
+    <p>
+      After this, we add <b>request-url</b> attribute to the container with the path to the endpoint. By default, it will be a <b>GET</b> request.
+    </p>
+    <pre><code class="ruby">
+def list
+  page = params[:page].to_i || 1
+  records_per_page = 20
+  total_pages = User.count / records_per_page
+  users = User.offset((page - 1) * records_per_page)
+              .limit(records_per_page)
+
+  render json: {
+    data: users.map{|user|
+      content_tag(:div, user.name, class: 'row')
+    }.join,
+    next_page: (total_pages == page ? nil : page + 1)
+  }
+end
+    </code></pre>
+  </div>
+  <div class="example-container">
+    <div class="example fis-container" data-request-url="<%= list_users_path %>"></div>
+  </div>
+</div>
+
+<!-- Custom render -->
+<div class="example-block">
+  <div class="description-container">
+    <h2>Custom row rendering</h2>
+  </div>
+  <div class="example-container">
+    <div class="example" id="custom-render" data-request-url="<%= list_json_users_path %>"></div>
+  </div>
+</div>
+
+<!-- Events example -->
+<div class="example-block">
+  <div class="description-container">
+    <h2>Events</h2>
+  </div>
+  <div class="example-container">
+    <div class="example" id="events-example" data-request-url="<%= list_users_path %>"></div>
+  </div>
+</div>
+
+<!-- Custom parameters -->
+<div class="example-block">
+  <div class="description-container">
+    <h2>Custom request parameters</h2>
+  </div>
+  <div class="example-container">
+    <div class="example" id="custom-parameters" data-request-url="<%= list_users_path %>"></div>
+  </div>
 </div>

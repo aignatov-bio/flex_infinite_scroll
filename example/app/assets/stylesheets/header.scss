@@ -1,0 +1,17 @@
+.header {
+  align-items: center;
+  background: $color_main;
+  color: $color_text;
+  display: flex;
+  justify-content: flex-end;
+  min-height: 50px;
+  padding: 0 4em;
+  z-index: 100;
+
+  h1 {
+    font-weight: normal;
+    b {
+      color: $color_secondary;
+    }
+  }
+}
