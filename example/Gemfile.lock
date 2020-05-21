@@ -87,6 +87,18 @@ GEM
     io-like (0.3.1)
     jbuilder (2.10.0)
       activesupport (>= 5.0.0)
+    kaminari (1.2.0)
+      activesupport (>= 4.1.0)
+      kaminari-actionview (= 1.2.0)
+      kaminari-activerecord (= 1.2.0)
+      kaminari-core (= 1.2.0)
+    kaminari-actionview (1.2.0)
+      actionview
+      kaminari-core (= 1.2.0)
+    kaminari-activerecord (1.2.0)
+      activerecord
+      kaminari-core (= 1.2.0)
+    kaminari-core (1.2.0)
     listen (3.2.1)
       rb-fsevent (~> 0.10, >= 0.10.3)
       rb-inotify (~> 0.9, >= 0.9.10)
@@ -189,6 +201,7 @@ DEPENDENCIES
   coffee-rails (~> 4.2)
   flex_infinite_scroll!
   jbuilder (~> 2.5)
+  kaminari
   listen
   puma (~> 3.11)
   rails (~> 5.2.3)

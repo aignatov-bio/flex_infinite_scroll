@@ -6,23 +6,27 @@ class UsersController < ApplicationController
 
   def list
     page = params[:page].to_i || 1
-    records_per_page = params[:per_page] ? params[:per_page].to_i : 20
-    total_users = User.count
-    users = User.all.offset((page - 1) * records_per_page).limit(records_per_page)
+    per_page = params[:per_page] ? params[:per_page].to_i : 20
     render json: {
-      data: users.map{|i| content_tag(:div, i.name)}.join,
-      next_page: ((total_users * records_per_page) == page ? nil : page + 1)
+      data: User.page(page).per(per_page).map{|i| content_tag(:div, i.name)}.join,
+      next_page: User.page(page).per(per_page).next_page,
+      elements_left: elements_left(page, per_page, User.count)
     }
   end
 
   def list_json
     page = params[:page].to_i || 1
-    records_per_page = 20
-    total_users = User.count
-    users = User.all.offset((page - 1) * records_per_page).limit(records_per_page)
+    per_page = 20
     render json: {
-      data: users,
-      page: ((total_users * records_per_page) == page ? nil : page + 1)
+      data: User.page(page).per(per_page),
+      page: User.page(page).per(per_page).next_page,
+      elements_left: elements_left(page, per_page, User.count)
     }
+  end
+
+  private
+
+  def elements_left(page, per_page, total)
+    return (total - page * per_page)
   end
 end
