@@ -37,7 +37,7 @@ var scrollContainer = document.getElementById('example');
 var fis = new flexIS(scrollContainer, {requestUrl: 'example_path'}).init();
 ```
 
-For more examples, you can run demo project localy. Go to `example` folder.
+For more examples, you can run demo project locally. Go to `example` folder.
 
 Install gems:
 ```sh
@@ -60,7 +60,19 @@ Now you can access with browser - `http://localhost:3000`
 
 ### Options
 ##### `customResponse` function(data, target)
-Data processing after loading next page. By default data will be added as HTML.|
+Data processing after loading next page. By default data will be added as HTML.
+
+##### `customResponseAttributes` object
+Set custom response attribute.
+**Default:**
+```
+{
+    next_page: 'next_page', // Next page integer value, "null" - if no more pages. 
+    data: 'data' // Field with HTML for render. Only for default response render.
+    elements_left : 'elements_left' // Required for virtual scroll, how much elements left.
+}
+```
+
 ##### `eventTarget` string
 Select different DOM element for scroll event. In query selector format `'#example'`.
 
@@ -68,28 +80,35 @@ Select different DOM element for scroll event. In query selector format `'#examp
 URL for next page.
 
 ##### `loadMargin` integer
-Bottom margin in pixels, when will start loading next page. Default: `150`
+Bottom margin in pixels, when will start loading next page.
+**Default:** `150`
 
 ##### `startPage` integer
-Start page for loading data. Default: `1`
+Start page for loading data.
+**Default:** `1`
 
 ##### `requestType` string
 Type of AJAX request. Default: `GET`
 
 ##### `customParams` function(params)
-Parameters that will be sent with next page request. Default: `{page: next_page}`
+Parameters that will be sent with next page request. 
+**Default:** `{page: next_page}`
 
 ##### `windowScroll` boolean
 Attach scroll event to `window` object.
 
-### Required response format
-Example of response data:
-```ruby
-{
-    data: [{id: 1, name: 'User 1'},...],
-    next_page: 2
-}
-```
+##### `virtualScroll` boolean
+Enable virtual scroll.
+
+##### `virtualScrollElementSize` integer
+Set element height. By default, it will be last element height on page.
+
+##### `perfectScrollbarSupport` boolean
+Enable perfect-scrollbar library support (perfect-scrollbar not included in gem).
+
+##### `perfectScrollbarConfig` object
+Set perfect-scrollbar library config.
+
 
 ### Actions
 
@@ -98,10 +117,17 @@ Initialize scroll container.
 ```js
 var fis = new flexIS(scrollContainer, {requestUrl: 'example_path'}).init(); 
 ```
+
 ##### `resetScroll(page)` 
 Reset scroll to specific page and clear all data in container. Default page - `1`.
 ```js
 fis.resetScroll(); 
+```
+
+##### `appendChild(el)` 
+Append DOM element to scroll container.
+```js
+fis.appendChild(el); 
 ```
 
 ### Events
@@ -111,6 +137,8 @@ Fires before next page request.
 
 ##### `FlexIS:afterLoad`
 Fires after next page loaded.
+
+
 
 License
 ----
