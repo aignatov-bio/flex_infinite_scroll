@@ -69,6 +69,7 @@ Set custom response attribute.
 {
     next_page: 'next_page', // Next page integer value, "null" - if no more pages. 
     data: 'data' // Field with HTML for render. Only for default response render.
+    elements_left : 'elements_left' // Required for virtual scroll, how much elements left.
 }
 ```
 
@@ -96,6 +97,19 @@ Parameters that will be sent with next page request.
 ##### `windowScroll` boolean
 Attach scroll event to `window` object.
 
+##### `virtualScroll` boolean
+Enable virtual scroll.
+
+##### `virtualScrollElementSize` integer
+Set element height. By default, it will be last element height on page.
+
+##### `perfectScrollbarSupport` boolean
+Enable perfect-scrollbar library support (perfect-scrollbar not included in gem).
+
+##### `perfectScrollbarConfig` object
+Set perfect-scrollbar library config.
+
+
 ### Actions
 
 ##### `init()`
@@ -103,10 +117,17 @@ Initialize scroll container.
 ```js
 var fis = new flexIS(scrollContainer, {requestUrl: 'example_path'}).init(); 
 ```
+
 ##### `resetScroll(page)` 
 Reset scroll to specific page and clear all data in container. Default page - `1`.
 ```js
 fis.resetScroll(); 
+```
+
+##### `appendChild(el)` 
+Append DOM element to scroll container.
+```js
+fis.appendChild(el); 
 ```
 
 ### Events
@@ -116,6 +137,8 @@ Fires before next page request.
 
 ##### `FlexIS:afterLoad`
 Fires after next page loaded.
+
+
 
 License
 ----
