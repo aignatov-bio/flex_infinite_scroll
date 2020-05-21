@@ -21,12 +21,10 @@
 
 document.addEventListener("DOMContentLoaded", function(){
   new flexIS(document.getElementById('custom-render'), {
-    customResponse: function(container, result) {
-      result.data.forEach(user => {
-        div = document.createElement('div');
-        div.innerHTML = 'User name: ' + user.name;
-        container.appendChild(div)
-      })
+    customResponse: function(el, json) {
+      var div = document.createElement('div');
+      div.innerHTML = 'User name: ' + el.name;
+      return div
     },
     customResponseAttributes: {
       next_page: 'page'
@@ -39,20 +37,21 @@ document.addEventListener("DOMContentLoaded", function(){
 
 document.addEventListener("DOMContentLoaded", function(){
   var event_handling_object = document.getElementById('events-example')
+  var flexISObject = new flexIS(event_handling_object)
 
   event_handling_object.addEventListener('FlexIS:beforeLoad', function(){
     var div = document.createElement('div');
     div.innerHTML = 'Before load';
-    event_handling_object.appendChild(div)
+    flexISObject.appendChild(div)
   });
 
   event_handling_object.addEventListener('FlexIS:afterLoad', function(){
     var div = document.createElement('div');
     div.innerHTML = 'After load';
-    event_handling_object.appendChild(div)
+    flexISObject.appendChild(div)
   });
 
-  new flexIS(event_handling_object).init();
+  flexISObject = flexISObject.init();
 })
 
 
@@ -65,6 +64,8 @@ document.addEventListener("DOMContentLoaded", function(){
     customParams: function(params) {
       params.per_page = 100
       return params;
-    }
+    },
+    virtualScroll: true,
+    perfectScrollbarSupport: true
   }).init();
 })
