@@ -43,30 +43,39 @@ class flexIS {
 
         function prepareEventTarget(object) {
             var eventTarget = document.querySelector(object.config.eventTarget) || object.targetObject;
-            if (object.config.windowScroll) {
+            if (["true", true].includes(object.config.windowScroll)) {
                 return window;
             } else {
                 return eventTarget;
             }
         }
 
-        if (this.config.perfectScrollbarSupport) {
+        if (["true", true].includes(this.config.perfectScrollbarSupport)) {
             let PSConfig = this.config.perfectScrollbarConfig || {}
             PSConfig.minScrollbarLength = PSConfig.minScrollbarLength || 40
             this.perfectScrollbar = new PerfectScrollbar(
                 this.targetObject,
                 PSConfig
-            )
+            );
         }
     }
 
     // Init infinite scroll
     init() {
-        this.#getData();
+        if(this.#virtualScroll().enabled()) {
+            this.#virtualScroll().pagesLoad();
+        } else {
+            this.#getData();
+        }
+
         this.config.eventTarget.addEventListener('scroll', () => {
-        	if (this.#scrollHitBottom() && this.nextPage) {
-                this.#getData();
-        	};
+            if(this.#virtualScroll().enabled()) {
+                this.#virtualScroll().pagesLoad();
+            } else {
+            	if (this.#scrollHitBottom() && this.nextPage) {
+                    this.#getData();
+            	};
+            }
             this.#hideInvisibleContent();
         });
         return this;
@@ -89,13 +98,13 @@ class flexIS {
     // Private methods
 
     // Run data request for next page
-    #getData = (page = this.nextPage ) => {
+    #getData = (page = this.nextPage, forceLoad = false) => {
         var xhr = new XMLHttpRequest();
         var params;
         const beforeLoadEvent = new CustomEvent('FlexIS:beforeLoad');
         const afterLoadEvent = new CustomEvent('FlexIS:afterLoad');
 
-        if (!page || this.loading) return false;
+        if (!page || (this.loading && !forceLoad)) return false;
 
         this.loading = true;
 
@@ -109,13 +118,11 @@ class flexIS {
           this.loading = false;
 
           if (xhr.status === 200) {
-            this.#customResponse(json);
-            this.nextPage = json[this.config.customResponseAttributes.next_page];
-            if (this.config.virtualScroll) {
-                this.elementsLeft = json[this.config.customResponseAttributes.elements_left];
-                this.#virtualScroll().update();
+            this.#customResponse(json, page);
+            if (!this.#virtualScroll().enabled()) {
+                this.nextPage = json[this.config.customResponseAttributes.next_page];
+                if (this.#scrollHitBottom()) this.#getData();
             }
-            if (this.#scrollHitBottom()) this.#getData();
           }
 
           this.targetObject.dispatchEvent(afterLoadEvent);
@@ -141,7 +148,7 @@ class flexIS {
 
     // Container position
     #containerPosition = () => {
-        return this.#scrollTop() + this.#containerSize() + this.config.loadMargin
+        return this.#scrollTop() + this.#containerSize() + this.config.loadMargin;
     }
 
     // Add custom params to request
@@ -160,12 +167,12 @@ class flexIS {
     }
 
     // Response handling
-    #customResponse = (json) => {
+    #customResponse = (json, page) => {
         var customResponse = this.config.customResponse;
         var data = json[this.config.customResponseAttributes.data];
         var div;
 
-        delete json[this.config.customResponseAttributes.data]
+        delete json[this.config.customResponseAttributes.data];
 
         if (data.constructor === Array) {
             data.forEach((el) => {
@@ -173,32 +180,37 @@ class flexIS {
                 if (typeof customResponse === "function") {
                     htmlEl = customResponse(el, json);
                 } else {
-                    htmlEl = el;
+                    let div = document.createElement('div');
+                    div.innerHTML = el;
+                    htmlEl = div.children[0];
                 }
-                this.#appendElementToContainer(htmlEl)
+                this.#appendElementToContainer(htmlEl, page);
             })
         } else if (data.constructor === String) {
             div = document.createElement('div');
             div.innerHTML = data;
             while (div.children.length > 0) {
-                this.#appendElementToContainer(div.children[0])
+                this.#appendElementToContainer(div.children[0], page);
             }
         }
 
         this.#hideInvisibleContent();
+
+        if (this.#virtualScroll().enabled()) {
+            this.#virtualScroll().destroyBaloon(page);
+        }
 
         if (this.perfectScrollbar) {
             this.perfectScrollbar.update();
         }
     }
 
-    #appendElementToContainer = (el) => {
-        if (this.#virtualScroll().baloon()) {
-            this.targetObject.insertBefore(el, this.#virtualScroll().baloon());
+    #appendElementToContainer = (el, page) => {
+        if (this.#virtualScroll().enabled()) {
+            this.#virtualScroll().insertBeforeBaloon(page, el);
         } else {
             this.targetObject.appendChild(el);
         }
-        this.elementHeight = el.offsetHeight;
     }
 
     // Hide invisible content, when leaving active zone
@@ -222,45 +234,33 @@ class flexIS {
     }
 
     #virtualScroll = () => {
-        // Find baloon
-        var baloon = this.targetObject.getElementsByClassName('fis-baloon')[0];
-
-        // Create new baloon
-        var createBaloon = () => {
-            baloon = document.createElement('div');
-            baloon.className = 'fis-baloon';
-            this.targetObject.appendChild(baloon);
-            return baloon;
-        }
-
-        // Check if baloon exist and return it
-        var baloonAdded = () => {
-            if (baloon) {
-                return baloon;
-            }
-            return false
-        }
-
-        // Update baloon size
-        var updateScroll = () => {
-            var elementHeight = this.config.virtualScrollElementSize || this.elementHeight;
-            if (!baloonAdded()) {
-                baloon = createBaloon();
-            }
-            if (this.elementsLeft > 0) {
-                baloon.style.height = (elementHeight * this.elementsLeft) + 'px';
-            } else {
-                // Remove baloon, if no more elements to load.
-                baloon.remove();
-            }
-        }
-
         return {
-            update: () => {
-                updateScroll()
+            enabled: () => {
+                return ["true", true].includes(this.config.virtualScroll);
             },
-            baloon: () => {
-                return baloonAdded();
+            insertBeforeBaloon: (page, el) => {
+                var baloon = this.targetObject.querySelector(`[data-baloon-page="${page}"]`)
+                var newHeight;
+                this.targetObject.insertBefore(el, baloon);
+                newHeight = baloon.offsetHeight - el.offsetHeight;
+                baloon.style.height = newHeight + 'px';
+
+            },
+            pagesLoad: () => {
+                var baloons = [...this.targetObject.getElementsByClassName('fis-baloon')];
+                var containerPosition = this.#containerPosition();
+                baloons.forEach(baloon => {
+                    var visibleBottom = this.#containerPosition() > baloon.offsetTop;
+                    var visibleTop = this.#scrollTop() < baloon.offsetTop + baloon.offsetHeight;
+                    if (baloon.dataset.loading) return;
+                    if (visibleBottom && visibleTop) {
+                        baloon.dataset.loading = true;
+                        this.#getData(baloon.dataset.baloonPage, true);
+                    }
+                })
+            },
+            destroyBaloon: (page) => {
+                this.targetObject.querySelector(`[data-baloon-page="${page}"]`).remove();
             }
         }
     }
@@ -287,13 +287,7 @@ class flexIS {
 
     // Check when load next page
     #scrollHitBottom = () => {
-        var hitBottom;
-        if (this.#virtualScroll().baloon()) {
-            hitBottom = this.#containerPosition() > this.#virtualScroll().baloon().offsetTop;
-        } else {
-            hitBottom = this.#scrollHeight() - this.#containerPosition() <= 0;
-        }
-        return hitBottom;
+        return this.#scrollHeight() - this.#containerPosition() <= 0;
     }
 }
 

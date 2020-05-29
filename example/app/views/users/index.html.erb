@@ -6,9 +6,23 @@
   <span>Custom parameters</span>
 </div>
 <div class="containers">
-  <div class="fis-container fw" data-request-url="<%= list_users_path %>" data-window-scroll="true" data-virtual-scroll="true"></div>
-  <div class="fis-container fh fp fw" data-request-url="<%= list_users_path %>" data-virtual-scroll="true"></div>
+  <%= fis_tag(User.all, {
+    requestUrl: list_users_path,
+    windowScroll: true,
+    virtualScrollElementSize: 40,
+    virtualScroll: true
+  }, {class: 'fw'}) do |el|
+    content_tag(:div, el.name, style: "height: 40px")
+  end %>
+  <%= fis_tag(User.all, {
+    requestUrl: list_users_path,
+    virtualScrollElementSize: 40,
+    virtualScroll: true
+  }, {class: 'fh fp fw'}) do |el|
+    content_tag(:div, el.name, style: "height: 40px")
+  end %>
   <div id="custom-render" class="fp fh fw" data-request-url="<%= list_json_users_path %>"></div>
-  <div id="events-example" class="fp fh fw" data-request-url="<%= list_users_path %>" data-virtual-scroll="true"></div>
+  <div id="events-example" class="fp fh fw" data-request-url="<%= list_users_path %>" ></div>
   <div id="custom-parameters" class="fp fh fw" data-request-url="<%= list_users_path %>"></div>
 </div>
+
