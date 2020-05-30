@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function(){
       return div
     },
     customResponseAttributes: {
-      next_page: 'page'
+      next_page: 'next_page'
     }
   }).init();
 });
@@ -65,7 +65,6 @@ document.addEventListener("DOMContentLoaded", function(){
       params.per_page = 100
       return params;
     },
-    virtualScroll: true,
     perfectScrollbarSupport: true
   }).init();
 })
